@@ -49,7 +49,7 @@ class ServerRuntime:
 async def server_lifespan(_: FastMCP) -> AsyncIterator[ServerRuntime]:
     config = AppConfig.from_env()
     config_state_message = (
-        "Starting academicPaperSearch with config state: "
+        "Starting paperSearch with config state: "
         f"semantic_scholar_api_key={'present' if config.semantic_scholar_api_key else 'absent'}, "
         f"contact_email={'present' if config.contact_email else 'absent'}"
     )
@@ -69,13 +69,11 @@ async def server_lifespan(_: FastMCP) -> AsyncIterator[ServerRuntime]:
 
 
 mcp = FastMCP(
-    name="academicPaperSearch",
+    name="paperSearch",
     instructions=(
-        "Search academic papers across Semantic Scholar, arXiv, and Crossref. "
-        "Use search_papers for quick normalized cross-source discovery, then use the "
-        "source-specific tools for exact paper lookup, citations, references, author "
-        "profiles, recommendations, arXiv full-text analysis, and Crossref journal, "
-        "funder, or type slices."
+        "Full academic paper-search MCP (all connectors). Cursor/Ubuntu surveys should "
+        "use python -m academic_mcp_server.survey.mcp (paperSearch survey profile). "
+        "Search academic papers across Semantic Scholar, arXiv, and Crossref."
     ),
     lifespan=server_lifespan,
     log_level="INFO",

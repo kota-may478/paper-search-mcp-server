@@ -10,6 +10,7 @@ from academic_mcp_server.survey.api_gateway import (
     survey_api_lock,
     survey_auth_status,
 )
+from academic_mcp_server.survey.bootstrap import add_bootstrap_arguments, run_bootstrap
 from academic_mcp_server.survey.analysis import analyze_corpus
 from academic_mcp_server.survey.content_acquisition import enrich_content
 from academic_mcp_server.survey.enrich import enrich_crossref
@@ -89,10 +90,16 @@ def main() -> None:
 
     sub.add_parser("auth-status", help="Show SS/OpenAlex credential and cache lock configuration")
 
+    p_boot = sub.add_parser("bootstrap", help="Create survey mirror dir, survey_config.json, and step scripts")
+    add_bootstrap_arguments(p_boot)
+
     args = parser.parse_args()
 
     if args.command == "auth-status":
         print(json.dumps(survey_auth_status(), ensure_ascii=False, indent=2))
+        return
+    if args.command == "bootstrap":
+        run_bootstrap(args)
         return
 
     mirror = args.mirror_dir.expanduser().resolve()

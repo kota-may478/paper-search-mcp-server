@@ -1,10 +1,41 @@
-# Academic MCP Server
+# paper-search-mcp-server
 
 > Japanese version continues after English version. / 日本語版は英語版の後に続きます。
 
-Single local stdio MCP server for academic paper search across Semantic Scholar, arXiv, and Crossref.
+Single local stdio MCP server for academic paper search and Obsidian `@survey` workflows.
+
+**Cursor on Ubuntu (canonical):** MCP display name is **`paperSearch`**. Cursor launches `python -m academic_mcp_server.survey.mcp` from this repo (survey tool profile). The Python package remains `academic_mcp_server`. Secrets stay in the shell (`ACADEMIC_MCP_SEMANTIC_SCHOLAR_API_KEY`), not in this repository.
+
+The full connector surface is still available as `python -m academic_mcp_server.server`.
 
 This repository provides one MCP server process, not three separate servers. The MCP entrypoint is intentionally thin, while API-specific behavior is split into dedicated connector modules and shared normalization helpers.
+
+## Cursor / Ubuntu
+
+User MCP (`~/.cursor/mcp.json`) is deployed by [wsl-rule](https://github.com/kota-may478/wsl-rule). Shape:
+
+    "paperSearch": {
+      "command": "~/.local/share/paper-search-mcp-server/.venv/bin/python",
+      "args": ["-m", "academic_mcp_server.survey.mcp"],
+      "cwd": "~/Insync/01_Private/Program/paper-search-mcp-server",
+      "env": {
+        "PYTHONPATH": "~/Insync/01_Private/Program/paper-search-mcp-server/src",
+        "ACADEMIC_MCP_SEMANTIC_SCHOLAR_API_KEY": "${env:ACADEMIC_MCP_SEMANTIC_SCHOLAR_API_KEY}",
+        "ACADEMIC_MCP_CONTACT_EMAIL": "you@example.org"
+      }
+    }
+
+Put the Semantic Scholar key in `~/.bashrc` **before** the interactive-shell guard:
+
+    ./scripts/configure-bashrc-env.sh --key YOUR_KEY --email you@example.org
+
+Survey bootstrap (same package):
+
+    python -m academic_mcp_server.survey.cli bootstrap --article-dir ... --survey-name ... ...
+
+Check credentials (does not print secrets):
+
+    python -m academic_mcp_server.survey.cli auth-status
 
 ## What It Does
 
@@ -48,10 +79,10 @@ python -m pip install -e .
 
 This repository no longer tracks `.vscode/mcp.json`. You can run the server in either of these ways:
 
-- User profile `mcp.json`: recommended when you want `academicPaperSearch` available from any workspace.
+- User profile `mcp.json`: recommended when you want `paperSearch` available from any workspace.
 - Workspace `.vscode/mcp.json`: recommended when you want the config to stay relative to the current clone while iterating on MCP settings.
 
-Use one placement at a time for the `academicPaperSearch` server ID unless you intentionally rename one of them.
+Use one placement at a time for the `paperSearch` server ID unless you intentionally rename one of them.
 
 ### Option A: User Profile `mcp.json`
 
@@ -65,13 +96,13 @@ Use absolute paths so the server can start even when a different workspace is op
 		{
 			"type": "promptString",
 			"id": "academic-paper-semantic-scholar-api-key",
-			"description": "Semantic Scholar API key for academicPaperSearch (required)",
+			"description": "Semantic Scholar API key for paperSearch (required)",
 			"password": true
 		},
 		{
 			"type": "promptString",
 			"id": "academic-paper-contact-email",
-			"description": "Contact email for Crossref and academicPaperSearch"
+			"description": "Contact email for Crossref and paperSearch"
 		},
 		{
 			"type": "promptString",
@@ -80,7 +111,7 @@ Use absolute paths so the server can start even when a different workspace is op
 		}
 	],
 	"servers": {
-		"academicPaperSearch": {
+		"paperSearch": {
 			"type": "stdio",
 			"command": "C:/path/to/academic-mcp-server-copilot/.venv/Scripts/python.exe",
 			"args": [
@@ -116,13 +147,13 @@ Create `.vscode/mcp.json` locally when you want the config to follow the current
 		{
 			"type": "promptString",
 			"id": "academic-paper-semantic-scholar-api-key",
-			"description": "Semantic Scholar API key for academicPaperSearch (required)",
+			"description": "Semantic Scholar API key for paperSearch (required)",
 			"password": true
 		},
 		{
 			"type": "promptString",
 			"id": "academic-paper-contact-email",
-			"description": "Contact email for Crossref and academicPaperSearch"
+			"description": "Contact email for Crossref and paperSearch"
 		},
 		{
 			"type": "promptString",
@@ -131,7 +162,7 @@ Create `.vscode/mcp.json` locally when you want the config to follow the current
 		}
 	],
 	"servers": {
-		"academicPaperSearch": {
+		"paperSearch": {
 			"type": "stdio",
 			"command": "${workspaceFolder}/.venv/Scripts/python.exe",
 			"args": [
@@ -198,8 +229,8 @@ The `arxiv_full_text` response additionally returns extracted full text, the ext
 ### User Profile Workflow
 
 1. Open this repository once and install the package into its `.venv` with `python -m pip install -e .`.
-2. Open your user profile `mcp.json` and point `academicPaperSearch` at this repository with absolute paths.
-3. From any workspace, open the MCP UI or run `MCP: List Servers` and start `academicPaperSearch`.
+2. Open your user profile `mcp.json` and point `paperSearch` at this repository with absolute paths.
+3. From any workspace, open the MCP UI or run `MCP: List Servers` and start `paperSearch`.
 4. Enter the requested MCP input values when VS Code prompts for them.
 
 ### Workspace Workflow
@@ -207,7 +238,7 @@ The `arxiv_full_text` response additionally returns extracted full text, the ext
 1. Open this repository in VS Code.
 2. Install the package into the workspace `.venv` with `python -m pip install -e .`.
 3. Create `.vscode/mcp.json` locally from the workspace example above.
-4. Start the server from the MCP UI or run `MCP: List Servers` and start `academicPaperSearch`.
+4. Start the server from the MCP UI or run `MCP: List Servers` and start `paperSearch`.
 5. Enter the requested MCP input values when VS Code prompts for them.
 
 If tool metadata does not refresh after edits, run `MCP: Reset Cached Tools` and restart the server.
@@ -293,10 +324,10 @@ python -m pip install -e .
 
 このリポジトリでは `.vscode/mcp.json` を追跡しない構成に変更しました。代わりに、次の 2 通りで運用できます。
 
-- user profile の `mcp.json`: どのワークスペースからでも `academicPaperSearch` を使いたい場合に向いています。
+- user profile の `mcp.json`: どのワークスペースからでも `paperSearch` を使いたい場合に向いています。
 - workspace の `.vscode/mcp.json`: 現在の clone に対して相対パスで設定したい場合に向いています。
 
-同じ `academicPaperSearch` という server ID を使うなら、基本的にはどちらか片方だけを有効にしてください。
+同じ `paperSearch` という server ID を使うなら、基本的にはどちらか片方だけを有効にしてください。
 
 ### 方法 A: User Profile `mcp.json`
 
@@ -310,17 +341,17 @@ VS Code の user profile 側の `mcp.json` にサーバー設定をマージし�
 		{
 			"type": "promptString",
 			"id": "academic-paper-semantic-scholar-api-key",
-			"description": "Semantic Scholar API key for academicPaperSearch (required)",
+			"description": "Semantic Scholar API key for paperSearch (required)",
 			"password": true
 		},
 		{
 			"type": "promptString",
 			"id": "academic-paper-contact-email",
-			"description": "Contact email for Crossref and academicPaperSearch"
+			"description": "Contact email for Crossref and paperSearch"
 		}
 	],
 	"servers": {
-		"academicPaperSearch": {
+		"paperSearch": {
 			"type": "stdio",
 			"command": "C:/path/to/academic-mcp-server-copilot/.venv/Scripts/python.exe",
 			"args": [
@@ -355,17 +386,17 @@ macOS / Linux では Python 実行ファイルのパスを `.venv/bin/python` �
 		{
 			"type": "promptString",
 			"id": "academic-paper-semantic-scholar-api-key",
-			"description": "Semantic Scholar API key for academicPaperSearch (required)",
+			"description": "Semantic Scholar API key for paperSearch (required)",
 			"password": true
 		},
 		{
 			"type": "promptString",
 			"id": "academic-paper-contact-email",
-			"description": "Contact email for Crossref and academicPaperSearch"
+			"description": "Contact email for Crossref and paperSearch"
 		}
 	],
 	"servers": {
-		"academicPaperSearch": {
+		"paperSearch": {
 			"type": "stdio",
 			"command": "${workspaceFolder}/.venv/Scripts/python.exe",
 			"args": [
@@ -426,8 +457,8 @@ macOS / Linux では Python 実行ファイルのパスを `.venv/bin/python` �
 ### User Profile 運用
 
 1. このリポジトリを一度開き、`.venv` に `python -m pip install -e .` を実行します。
-2. user profile 側の `mcp.json` に、このリポジトリへの絶対パスを使った `academicPaperSearch` を設定します。
-3. 任意のワークスペースから MCP UI か `MCP: List Servers` を開き、`academicPaperSearch` を起動します。
+2. user profile 側の `mcp.json` に、このリポジトリへの絶対パスを使った `paperSearch` を設定します。
+3. 任意のワークスペースから MCP UI か `MCP: List Servers` を開き、`paperSearch` を起動します。
 4. VS Code に求められた入力値を登録します。
 
 ### Workspace 運用
@@ -435,7 +466,7 @@ macOS / Linux では Python 実行ファイルのパスを `.venv/bin/python` �
 1. このリポジトリを VS Code で開きます。
 2. `.venv` に対して `python -m pip install -e .` を実行します。
 3. 上の workspace 用サンプルをもとに、ローカルで `.vscode/mcp.json` を作成します。
-4. MCP UI から起動するか、`MCP: List Servers` で `academicPaperSearch` を起動します。
+4. MCP UI から起動するか、`MCP: List Servers` で `paperSearch` を起動します。
 5. VS Code に求められた入力値を登録します。
 
 ツール一覧が更新されない場合は、`MCP: Reset Cached Tools` を実行してからサーバーを再起動してください。

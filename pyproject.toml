@@ -3,19 +3,20 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "academic-mcp-server"
-version = "0.1.0"
-description = "Production-ready stdio MCP server for academic paper search across Semantic Scholar, arXiv, and Crossref."
+name = "paper-search-mcp-server"
+version = "0.2.0"
+description = "Cursor/Ubuntu stdio MCP (paperSearch) for academic paper search and literature surveys."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-  "mcp[cli]>=1.27.0",
+  "mcp[cli]>=1.27.0,<2",
   "httpx>=0.28.1",
   "feedparser>=6.0.12",
   "pypdf>=5.4.0",
 ]
 
 [project.scripts]
+paper-search-mcp = "academic_mcp_server.survey.mcp:main"
 academic-mcp-server = "academic_mcp_server.server:main"
 survey-cli = "academic_mcp_server.survey.cli:main"
 
