@@ -13,6 +13,7 @@ from academic_mcp_server.survey.master_list import (
     master_list_path,
     resolve_python_mirror_dir,
 )
+from academic_mcp_server.survey.paths import final_ledger_path
 from academic_mcp_server.survey.topics_ipt import RESEARCH_GAPS, SEED_SUMMARIES, TOPICS, TOPIC_SUMMARIES, assign_subtopics
 from academic_mcp_server.survey.topics_loader import load_topics_symbols
 
@@ -168,7 +169,7 @@ def generate_docs(mirror_dir):
     name = cfg.get("survey_name", "survey")
     vault = Path(cfg.get("vault_survey_dir", mirror))
     article_path = vault / (name + ".md")
-    ledger_path = vault / (name + "_Ledger.md")
+    ledger_path = final_ledger_path(cfg, name)
     with open(master_list_path(pydir), encoding="utf-8") as f:
         ml = json.load(f)
     ordered, rids, kept = _ordered_strong(ml)

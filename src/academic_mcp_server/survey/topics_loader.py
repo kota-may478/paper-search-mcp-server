@@ -109,6 +109,7 @@ def validate_topic_taxonomy_alignment(cfg: dict[str, Any], article_text: str) ->
         or "inflight_ipt" in mod_lower
         or "topics_wpt" in mod_lower
         or "_wpt_" in mod_lower
+        or "dwpt" in mod_lower
     )
     has_ipt_headings = any(marker in s4 for marker in _IPT_SECTION4_MARKERS)
 

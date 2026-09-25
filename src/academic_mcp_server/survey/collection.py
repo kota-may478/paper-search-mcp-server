@@ -7,10 +7,12 @@ from pathlib import Path
 from academic_mcp_server.survey.api_gateway import fetch_ss_abstract, polite_sleep, survey_api_lock
 from academic_mcp_server.survey.enrich import enrich_crossref
 from academic_mcp_server.survey.master_list import load_survey_config, master_list_path, save_master_list
+from academic_mcp_server.survey.paths import final_ledger_path, resolve_obsidian_dir
 
+_OBS = resolve_obsidian_dir()
 STEP2_STATS = "_step2_stats.json"
-WORKFLOW_PHASE_A_ANALYSIS = Path.home() / "Obsidian/01_Private/Tool/prompt/survey_workflow_step3plus.prompt.md"
-WORKFLOW_PHASE_B = Path.home() / "Obsidian/01_Private/Tool/prompt/survey_workflow_phase_b.prompt.md"
+WORKFLOW_PHASE_A_ANALYSIS = _OBS / "01_Private/Tool/prompt/survey_workflow_step3plus.prompt.md"
+WORKFLOW_PHASE_B = _OBS / "01_Private/Tool/prompt/survey_workflow_phase_b.prompt.md"
 HANDOFF_PHASE_A_CONTINUE = "handoff_step3.prompt.md"
 HANDOFF_PHASE_B = "handoff_phase_b.prompt.md"
 JSON_FENCE = "```json"
@@ -129,7 +131,7 @@ def render_ledger_collection(ml: list[dict], cfg: dict, step2_stats, enrich_resu
         "",
         f"# {name} — Collection Ledger (Phase A checkpoint)",
         "",
-        f"Phase A continues through Step 9; this file is a snapshot after Steps 1–2 (pre-screening). Final ledger: {name}_Ledger.md.",
+        f"Phase A continues through Step 9; this file is a snapshot after Steps 1–2 (pre-screening). Final ledger: {name}_Ledger.md under the survey ledger store (see survey workflow; not in Obsidian vault).",
         "",
         f"- Total entries: **{len(ml)}**",
         f"- Step 1 seeds: **{len(seeds)}**",
@@ -168,9 +170,9 @@ def render_handoff(cfg: dict, mirror: Path, vault: Path, ledger_path: Path) -> s
     target = cfg.get("target_word", "")
     wf = WORKFLOW_PHASE_A_ANALYSIS
     article = vault / f"{name}.md"
-    final_ledger = vault / f"{name}_Ledger.md"
+    final_ledger = final_ledger_path(cfg, name)
     step6_limit = int(cfg.get("step6_seed_limit") or 100)
-    finalize_script = Path.home() / "Obsidian/01_Private/Tool/scripts/survey_analysis_finalize.py"
+    finalize_script = _OBS / "01_Private/Tool/scripts/survey_analysis_finalize.py"
     return "\n".join([
         "# Survey handoff — Phase A (continue from Step 3)",
         "",
@@ -222,7 +224,7 @@ def render_handoff_phase_b(cfg: dict, mirror: Path, vault: Path) -> str:
     target = cfg.get("target_word", "")
     wf = WORKFLOW_PHASE_B
     article = vault / f"{name}.md"
-    final_ledger = vault / f"{name}_Ledger.md"
+    final_ledger = final_ledger_path(cfg, name)
     return "\n".join([
         "# Survey handoff — Phase B (Claude Code: Japanese article)",
         "",
@@ -250,7 +252,7 @@ def render_handoff_phase_b(cfg: dict, mirror: Path, vault: Path) -> str:
         "4. Improve References one-line Japanese summaries where content is available.",
         "5. Do **not** alter Section 3–5 tables except factual corrections.",
         "6. **Mandatory last step** — Phase B validation (`ok: true` required):",
-        f"   python3 {Path.home() / 'Obsidian/01_Private/Tool/scripts/survey_validate_phase_b.py'} {mirror}",
+        f"   python3 {_OBS / '01_Private/Tool/scripts/survey_validate_phase_b.py'} {mirror}",
         "   Checks: pipe-table column alignment; canonical [Rxxx](#^refRxxx); ^ref block IDs; strong-only References.",
         "7. Fix all validation **errors** before reporting completion.",
         "",

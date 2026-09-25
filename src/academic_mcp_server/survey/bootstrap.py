@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 
 from academic_mcp_server.survey.paths import (
+    final_ledger_path,
+    resolve_ledger_store_root,
     resolve_mcp_survey_src,
     resolve_mirror_root,
     resolve_obsidian_dir,
@@ -179,6 +181,8 @@ def run_bootstrap(args: argparse.Namespace) -> Path:
         "target_word": args.target_word,
         "article_number": args.article_number,
         "ledger_number": args.ledger_number,
+        "article_dir": args.article_dir.strip().strip("/"),
+        "ledger_store_dir": str(resolve_ledger_store_root()),
         "vault_root": str(vault_root),
         "vault_survey_dir": str(vault_survey_dir),
         "python_survey_dir": str(survey_dir),
@@ -191,6 +195,7 @@ def run_bootstrap(args: argparse.Namespace) -> Path:
     cfg_path = survey_dir / "survey_config.json"
     cfg_path.write_text(json.dumps(cfg, ensure_ascii=False, indent=2) + chr(10), encoding="utf-8")
     print(f"Wrote {cfg_path}")
+    print(f"Final ledger (Step 9): {final_ledger_path(cfg)}")
 
     copy_if_missing(shared_dir / "step4_keyword_search.py", survey_dir / "step4_keyword_search.py")
     copy_if_missing(shared_dir / "step6_select_seeds.py", survey_dir / "step6_select_seeds.py")
